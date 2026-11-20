@@ -1,0 +1,28 @@
+name: Install Lean, retrying downloads
+description: >
+  Installs elan and the toolchain named by lean-toolchain, as
+  leanprover/lean-action does with build, test and caching off. Each download
+  is retried, because one failed connection to releases.lean-lang.org (for
+  example "SSL connect error") would otherwise fail the job.
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        set -euo pipefail
+        retry() {
+          local delay
+          for delay in 10 30 60; do
+            "$@" && return
+            echo "::warning::'$*' failed; retrying in ${delay}s"
+            sleep "$delay"
+          done
+          "$@"
+        }
+        retry curl -sSf -o "$RUNNER_TEMP/elan-init.sh" \
+          https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh
+        retry sh "$RUNNER_TEMP/elan-init.sh" -y --default-toolchain none
+        retry "$HOME/.elan/bin/elan" toolchain install "$(< lean-toolchain)"
+        echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+        "$HOME/.elan/bin/lean" --version
+        "$HOME/.elan/bin/lake" --version

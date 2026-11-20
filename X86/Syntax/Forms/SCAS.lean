@@ -1,0 +1,63 @@
+-- Generated from pinned Intel XED operand tables and selected SDM forms: data/instruction/SCAS-SCASB-SCASW-SCASD.xml; do not edit.
+import X86.Syntax.Operands
+import X86.Syntax.Registers
+import X86.Syntax.FormIds
+
+namespace X86.Syntax
+
+inductive Forms.SCAS where
+  -- REPE_SCASB: REG0=XED_REG_AL:r:SUPP MEM0:cr:SUPP:b BASE0=ArDI():rcw:SUPP SEG0=FINAL_ESEG():r:SUPP REG1=ArCX():rcw:SUPP
+  | REPE_SCASB
+  -- REPE_SCASD: REG0=XED_REG_EAX:r:SUPP MEM0:cr:SUPP:d BASE0=ArDI():rcw:SUPP SEG0=FINAL_ESEG():r:SUPP REG1=ArCX():rcw:SUPP
+  | REPE_SCASD
+  -- REPE_SCASQ: REG0=XED_REG_RAX:r:SUPP MEM0:cr:SUPP:q BASE0=ArDI():rcw:SUPP SEG0=FINAL_ESEG():r:SUPP REG1=ArCX():rcw:SUPP
+  | REPE_SCASQ
+  -- REPE_SCASW: REG0=XED_REG_AX:r:SUPP MEM0:cr:SUPP:w BASE0=ArDI():rcw:SUPP SEG0=FINAL_ESEG():r:SUPP REG1=ArCX():rcw:SUPP
+  | REPE_SCASW
+  -- REPNE_SCASB: REG0=XED_REG_AL:r:SUPP MEM0:cr:SUPP:b BASE0=ArDI():rcw:SUPP SEG0=FINAL_ESEG():r:SUPP REG1=ArCX():rcw:SUPP
+  | REPNE_SCASB
+  -- REPNE_SCASD: REG0=XED_REG_EAX:r:SUPP MEM0:cr:SUPP:d BASE0=ArDI():rcw:SUPP SEG0=FINAL_ESEG():r:SUPP REG1=ArCX():rcw:SUPP
+  | REPNE_SCASD
+  -- REPNE_SCASQ: REG0=XED_REG_RAX:r:SUPP MEM0:cr:SUPP:q BASE0=ArDI():rcw:SUPP SEG0=FINAL_ESEG():r:SUPP REG1=ArCX():rcw:SUPP
+  | REPNE_SCASQ
+  -- REPNE_SCASW: REG0=XED_REG_AX:r:SUPP MEM0:cr:SUPP:w BASE0=ArDI():rcw:SUPP SEG0=FINAL_ESEG():r:SUPP REG1=ArCX():rcw:SUPP
+  | REPNE_SCASW
+  -- SCASB: REG0=XED_REG_AL:r:SUPP MEM0:r:SUPP:b BASE0=ArDI():rw:SUPP SEG0=FINAL_ESEG():r:SUPP
+  | SCASB
+  -- SCASD: REG0=XED_REG_EAX:r:SUPP MEM0:r:SUPP:d BASE0=ArDI():rw:SUPP SEG0=FINAL_ESEG():r:SUPP
+  | SCASD
+  -- SCASQ: REG0=XED_REG_RAX:r:SUPP MEM0:r:SUPP:q BASE0=ArDI():rw:SUPP SEG0=FINAL_ESEG():r:SUPP
+  | SCASQ
+  -- SCASW: REG0=XED_REG_AX:r:SUPP MEM0:r:SUPP:w BASE0=ArDI():rw:SUPP SEG0=FINAL_ESEG():r:SUPP
+  | SCASW
+  deriving Repr, BEq, Inhabited
+
+def Forms.SCAS.xedForm : Forms.SCAS → XedForm
+  | .REPE_SCASB => .REPE_SCASB
+  | .REPE_SCASD => .REPE_SCASD
+  | .REPE_SCASQ => .REPE_SCASQ
+  | .REPE_SCASW => .REPE_SCASW
+  | .REPNE_SCASB => .REPNE_SCASB
+  | .REPNE_SCASD => .REPNE_SCASD
+  | .REPNE_SCASQ => .REPNE_SCASQ
+  | .REPNE_SCASW => .REPNE_SCASW
+  | .SCASB => .SCASB
+  | .SCASD => .SCASD
+  | .SCASQ => .SCASQ
+  | .SCASW => .SCASW
+
+def Forms.SCAS.encodingFits : Forms.SCAS → Bool
+  | .REPE_SCASB  => true
+  | .REPE_SCASD  => true
+  | .REPE_SCASQ  => true
+  | .REPE_SCASW  => true
+  | .REPNE_SCASB  => true
+  | .REPNE_SCASD  => true
+  | .REPNE_SCASQ  => true
+  | .REPNE_SCASW  => true
+  | .SCASB  => true
+  | .SCASD  => true
+  | .SCASQ  => true
+  | .SCASW  => true
+
+end X86.Syntax

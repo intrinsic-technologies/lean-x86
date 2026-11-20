@@ -1,0 +1,53 @@
+name: build
+on:
+  workflow_call:
+    inputs:
+      trust:
+        description: Also replay every constant in the kernel, and test the trust check on planted declarations
+        type: boolean
+        default: false
+    outputs:
+      cache-key:
+        description: Validated build cache key
+        value: ${{ jobs.run.outputs.cache-key }}
+jobs:
+  run:
+    name: run
+    runs-on:
+      - runs-on=${{ github.run_id }}-${{ github.run_attempt }}-build/cpu=16/family=m8a.4xlarge+m7a.4xlarge/image=ubuntu24-full-x64/volume=160gb/extras=s3-cache/spot=false
+    timeout-minutes: 90
+    outputs:
+      cache-key: ${{ steps.x86-cache.outputs.cache-primary-key }}
+    steps:
+      - uses: runs-on/action@v2
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup-lean
+      - name: Restore X86 build outputs
+        id: x86-cache
+        uses: actions/cache/restore@v6.1.0
+        with:
+          path: .lake/build
+          # Lake checks source, imports and package configuration after restoration.
+          key: x86-build-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('X86.lean', 'X86/**/*.lean', 'Prelude.lean', 'Prelude/**/*.lean', 'Elf.lean', 'Elf/**/*.lean', 'tools/AuthoredProofs.lean', 'lakefile.toml', 'lake-manifest.json') }}
+          restore-keys: |
+            x86-build-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-
+      # --iofail fails the build on any warning or info message. Lake replays the diagnostics of
+      # up-to-date modules, so a cached build still reports every diagnostic.
+      - name: Build X86, Prelude and Elf and check diagnostics
+        shell: bash
+        run: lake --no-ansi build --iofail
+      - name: Check what X86, Prelude and Elf trust
+        shell: bash
+        env:
+          REPLAY: ${{ inputs.trust && '--replay' || '' }}
+        run: lake env lean --run tools/check_trust.lean $REPLAY --roots X86 Prelude Elf
+      - name: Check that the trust check reports planted declarations
+        if: inputs.trust
+        shell: bash
+        run: python3 tools/test_check_trust.py
+      - name: Save X86 build outputs
+        if: steps.x86-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6.1.0
+        with:
+          path: .lake/build
+          key: ${{ steps.x86-cache.outputs.cache-primary-key }}

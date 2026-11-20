@@ -1,0 +1,31 @@
+# Lake package metadata. The Lean compiler version is pinned in lean-toolchain.
+name = "x86"
+version = "0.1.0"
+
+# `lake build` checks the X86, Prelude and Elf libraries. It runs
+# elaboration-time assertions.
+defaultTargets = ["X86", "Prelude", "Elf"]
+
+enableArtifactCache = true
+restoreAllArtifacts = true
+
+# lean_lib declares importable modules from X86.lean and the X86/ directory.
+[[lean_lib]]
+name = "X86"
+
+# Common objects for defining statements about x86 programs.
+[[lean_lib]]
+name = "Prelude"
+
+# An ELF64 reader of the file format, for statements about a program's file, from Elf.lean and
+# the Elf/ directory. It depends only on Lean's core library.
+[[lean_lib]]
+name = "Elf"
+
+# Which constants of a library are proofs that Lean did not generate. The extraction tests run
+# tools/check_authored_proofs.lean with it on the modules they generate. It imports only Lean and
+# is not a default target.
+[[lean_lib]]
+name = "AuthoredProofs"
+srcDir = "tools"
+roots = ["AuthoredProofs"]

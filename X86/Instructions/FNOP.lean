@@ -1,0 +1,59 @@
+-- Generated from data/instruction/FNOP.xml: selected operations and instruction forms; Intel XED 0bcb6237345c5066726dcc08b3d87928df3b5b26: datafiles/xed-isa.txt, datafiles/xed-amd-prefetch.txt, datafiles/cet/cet-isa.xed.txt, datafiles/cet/cet-nop-remove.xed.txt, datafiles/hsw/lzcnt-isa.xed.txt, datafiles/xed-eOSZ.txt; do not edit.
+-- Source SHA256: bc04bc79995f87fd1e7ab71de40ad2fb56c8ce4d52d35d1745fa2987b577ea7e
+-- Description: data/sdm/FNOP.docbook
+-- Performs no FPU operation.
+-- [Intel SDM](https://intel.github.io/SDM/sdm.html?instr=FNOP)
+import X86.Runtime
+import X86.Helpers.FP87.Check_For_Pending_Unmasked_Floating_Point_Exceptions
+import X86.Helpers.FP87.Is_Enabled
+import X86.Helpers.FP87.Update_Instruction_Info
+import X86.Helpers.Instruction_Context
+import X86.Helpers.Null_Segment
+import X86.Helpers.Report_Invalid_Opcode
+import X86.Helpers.Report_Not_Available_Exception
+import X86.Helpers.Std.Bits.Zero
+import X86.State
+
+set_option autoImplicit false
+
+open X86.Runtime
+open scoped X86.Runtime.Syntax
+
+open X86.Helpers
+
+namespace X86
+
+variable {σ : Type}
+
+variable
+  [X86.Get_CPUID_Value.Binding σ]
+  [X86.Helpers.Unimplemented_Feature.Binding σ]
+  [X86.Config.Value.Feature_FIP_Use_Linear_Address]
+
+def Instructions.Operations.FNOP  : Runtime.SpecM Exception (State σ) Unit := do
+  FP87.Check_For_Pending_Unmasked_Floating_Point_Exceptions
+
+  FP87_Status.setC0 (← UNSPECIFIED (size := 1))
+  FP87_Status.setC1 (← UNSPECIFIED (size := 1))
+  FP87_Status.setC2 (← UNSPECIFIED (size := 1))
+  FP87_Status.setC3 (← UNSPECIFIED (size := 1))
+
+-- FNOP: D9 D0
+def Instructions.FNOP
+    (ip : Bits 64) (context : Instruction_Context) (mod : Bits 2) (reg rm : Bits 3) (opcode : Bits 8) :
+    Runtime.SpecM Exception (State σ) Unit := do
+  if context.lock_prefix_present then
+    liftM (Report_Invalid_Opcode)
+
+  if (not (← FP87.Is_Enabled)) then
+    liftM (Report_Not_Available_Exception)
+
+  FP87.Check_For_Pending_Unmasked_Floating_Point_Exceptions
+
+  modify ({ · with Next_IP := ip })
+
+  Instructions.Operations.FNOP
+
+  FP87.Update_Instruction_Info opcode (← concatBits (leftSize := 5) (rightSize := 3) (← concatBits (leftSize := 2) (rightSize := 3) mod reg) rm) false (← Null_Segment (← get).DS) (← Std.Bits.Zero 64)
+
+end X86

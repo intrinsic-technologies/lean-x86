@@ -1,0 +1,10 @@
+elf = 'input.elf'
+output = 'Fixture/Extracted'
+namespace = 'Fixture.Extracted'
+code_sections = ['.text.hot', '.text']
+data_sections = ['.rodata']
+
+[entries]
+entry = 'entry'
+second = 'second'
+extraEntry = 'extra'

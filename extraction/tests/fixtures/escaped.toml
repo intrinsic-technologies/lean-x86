@@ -1,0 +1,9 @@
+elf = 'input.elf'
+output = 'Fixture/lean-keccak'
+namespace = 'Fixture.lean-keccak'
+code_sections = ['.text']
+data_sections = ['.rodata']
+
+[entries]
+entry = 'entry'
+second = 'second'

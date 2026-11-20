@@ -1,0 +1,46 @@
+name: Restore cache, retrying once
+description: >
+  actions/cache/restore, retried once when nothing was restored. A failed
+  download (for example "Premature close") is reported as a cache miss.
+inputs:
+  path:
+    description: Paths to restore
+    required: true
+  key:
+    description: Primary cache key
+    required: true
+  restore-keys:
+    description: Ordered fallback key prefixes
+    required: false
+    default: ''
+  fail-on-cache-miss:
+    description: Fail when the retry also restores nothing
+    required: false
+    default: 'false'
+outputs:
+  cache-hit:
+    description: Whether the primary key was restored
+    value: ${{ steps.retry.outputs.cache-hit || steps.first.outputs.cache-hit }}
+  cache-primary-key:
+    description: The primary key
+    value: ${{ steps.first.outputs.cache-primary-key }}
+  cache-matched-key:
+    description: The key that was restored, if any
+    value: ${{ steps.retry.outputs.cache-matched-key || steps.first.outputs.cache-matched-key }}
+runs:
+  using: composite
+  steps:
+    - id: first
+      uses: actions/cache/restore@v6.1.0
+      with:
+        path: ${{ inputs.path }}
+        key: ${{ inputs.key }}
+        restore-keys: ${{ inputs.restore-keys }}
+    - id: retry
+      if: steps.first.outputs.cache-matched-key == ''
+      uses: actions/cache/restore@v6.1.0
+      with:
+        path: ${{ inputs.path }}
+        key: ${{ inputs.key }}
+        restore-keys: ${{ inputs.restore-keys }}
+        fail-on-cache-miss: ${{ inputs.fail-on-cache-miss }}

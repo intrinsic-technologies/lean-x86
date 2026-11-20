@@ -1,0 +1,25 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Build the libraries, audit what they trust (with kernel replay and the planted-declaration
+# test) and run the extraction tests.
+jobs:
+  build:
+    name: build
+    uses: ./.github/workflows/build.yml
+    with:
+      trust: true
+
+  extraction:
+    name: extraction
+    needs: build
+    uses: ./.github/workflows/extraction.yml
+    with:
+      build-cache-key: ${{ needs.build.outputs.cache-key }}

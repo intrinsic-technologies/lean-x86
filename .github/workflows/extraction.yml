@@ -1,0 +1,46 @@
+name: extraction
+on:
+  workflow_call:
+    inputs:
+      build-cache-key:
+        description: Exact build cache key from its build job
+        type: string
+        required: true
+jobs:
+  run:
+    name: run
+    runs-on:
+      - runs-on=${{ github.run_id }}-${{ github.run_attempt }}-extraction/cpu=16/family=m8a.4xlarge+m7a.4xlarge/image=ubuntu24-full-x64/volume=160gb/extras=s3-cache/spot=false
+    timeout-minutes: 20
+    steps:
+      - uses: runs-on/action@v2
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup-lean
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Restore Lean build outputs
+        uses: ./.github/actions/cache-restore
+        with:
+          path: .lake/build
+          key: ${{ inputs.build-cache-key }}
+          fail-on-cache-miss: true
+      - name: Fetch Lean packages
+        shell: bash
+        # The tests run `lake env` concurrently; resolve the packages once so they do not each clone them.
+        run: lake env true
+      - name: Build extraction decoder
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential binutils python3
+          git submodule update --init vendor/xed vendor/mbuild
+          make -C extraction
+      - name: Check Rust formatting and lints
+        shell: bash
+        run: |
+          cargo fmt --manifest-path extraction/Cargo.toml --check
+          cargo clippy --manifest-path extraction/Cargo.toml --locked --all-targets -- -D warnings
+      - name: Run extraction tests including Lean checks
+        shell: bash
+        run: cargo test --manifest-path extraction/Cargo.toml --locked -- --include-ignored

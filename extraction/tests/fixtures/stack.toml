@@ -1,0 +1,33 @@
+elf = 'input.elf'
+output = 'Fixture/Extracted'
+namespace = 'Fixture.Extracted'
+code_sections = ['.text']
+data_sections = ['.rodata']
+rust_panics = true
+
+[entries]
+entry = 'entry'
+permutation = 'permutation'
+second = 'second'
+tail = 'tail'
+recursive = 'recursive'
+dynamic = 'dynamic'
+growingLoop = 'growing_loop'
+unresolved = 'unresolved'
+unreadableSlot = 'unreadable_slot'
+aligned = 'aligned'
+userPanic = 'user_panic'
+panicLoop = 'panic_stub'
+panicCaller = 'panic_caller'
+panicIndirect = 'panic_indirect'
+paddedBranch = 'padded_branch'
+fallthroughCall = 'fallthrough_call'
+fallthroughConditional = 'fallthrough_conditional'
+fallthroughFrame = 'fallthrough_frame'
+sharedEntry = 'shared_entry'
+sharedTail = 'shared_tail'
+fallthroughCycle = 'fallthrough_cycle'
+fallthroughMissing = 'fallthrough_missing'
+boundaryCall = 'boundary_call'
+mixedPanicCall = 'mixed_panic_call'
+panicBypass = 'panic_bypass'
